@@ -70,45 +70,6 @@ public class MySQLDatabase extends AbstractMySQLSynchroniser<MySQLDatabase> {
         }
         return updates;
     }
-
-    public static void compareTables(String[] args) {
-
-        try {
-            Connection conn = MySQLUtils.getConnection("jbuncle-server", 3306, "test", "root", "mjsb1989");
-            Savepoint savepoint = conn.setSavepoint();
-
-            try {
-                conn.setAutoCommit(false);
-                final String sourceTable = "origJames";
-                final String targetTable = "James";
-                final MySQLBaseTable target = new MySQLBaseTable(conn, "origJames");
-                final MySQLBaseTable source = new MySQLBaseTable(conn, "James");
-                System.out.println(source.getSynchroniseUpdates(target));
-                source.synchronise(conn, target);
-                if (!createStatementsSame(conn, sourceTable, conn, targetTable)) {
-                    throw new Exception("Sync not succesful, tables don't match");
-                }
-                conn.commit();
-            } catch (Exception ex) {
-                try {
-                    conn.rollback(savepoint);
-                } catch (SQLException ex1) {
-                    Logger.getLogger(MySQLDatabase.class.getName()).log(Level.SEVERE, null, ex1);
-                }
-                Logger.getLogger(MySQLDatabase.class.getName()).log(Level.SEVERE, null, ex);
-            } finally {
-                try {
-                    conn.close();
-                } catch (SQLException ex) {
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(MySQLDatabase.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
-            Logger.getLogger(MySQLDatabase.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
     private static boolean createStatementsSame(
             final Connection sourceConn, final String sourceTable,
             final Connection targetConn, final String targetTable)
