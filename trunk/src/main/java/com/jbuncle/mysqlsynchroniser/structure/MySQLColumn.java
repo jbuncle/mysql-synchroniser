@@ -20,7 +20,7 @@
  *  THE SOFTWARE.
  * 
  */
-package com.mycompany.mysqldiffgenerator.structure;
+package com.jbuncle.mysqlsynchroniser.structure;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -32,7 +32,7 @@ import java.util.List;
  *
  * @author James Buncle
  */
-public class MySQLColumn implements MySQLComparable<MySQLColumn> {
+class MySQLColumn implements MySQLComparable<MySQLColumn> {
 
     private final String columnName;
     private final String type;
@@ -56,7 +56,7 @@ public class MySQLColumn implements MySQLComparable<MySQLColumn> {
             final String extra,
             final String collation,
             final String comment) {
-        
+
         this.columnName = field;
         this.type = type;
         this.nullable = nullable;

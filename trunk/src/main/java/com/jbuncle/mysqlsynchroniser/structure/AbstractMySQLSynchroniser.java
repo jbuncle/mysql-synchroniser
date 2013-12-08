@@ -20,7 +20,7 @@
  *  THE SOFTWARE.
  * 
  */
-package com.mycompany.mysqldiffgenerator.structure;
+package com.jbuncle.mysqlsynchroniser.structure;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -29,7 +29,7 @@ import java.sql.SQLException;
  *
  * @author James Buncle
  */
-public abstract class AbstractMySQLSynchroniser<TargetType> implements MySQLSynchronise<TargetType> {
+abstract class AbstractMySQLSynchroniser<TargetType> implements MySQLSynchronise<TargetType> {
 
     public void synchronise(Connection conn, TargetType target) throws SQLException {
         for (final String update : getSynchroniseUpdates(target)) {

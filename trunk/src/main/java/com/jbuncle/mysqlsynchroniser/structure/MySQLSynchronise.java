@@ -19,15 +19,19 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package com.mycompany.mysqldiffgenerator.structure;
+package com.jbuncle.mysqlsynchroniser.structure;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
 
 /**
  *
  * @author James Buncle
  */
-public interface MySQLTable<TargetType> extends MySQLSynchronise<TargetType> {
+interface MySQLSynchronise<T> {
 
-    public String getCreateStatement();
+    public List<String> getSynchroniseUpdates(T t);
 
-    public String getDropStatement();
+    public void synchronise(Connection conn, T t) throws SQLException;
 }
