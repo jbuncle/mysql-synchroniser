@@ -19,7 +19,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package com.mycompany.mysqldiffgenerator.structure;
+package com.jbuncle.mysqlsynchroniser.structure;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -31,7 +31,7 @@ import java.util.List;
  *
  * @author James Buncle
  */
-public class MySQLIndexDescriptor implements MySQLComparable<MySQLIndexDescriptor> {
+class MySQLIndexDescriptor implements MySQLComparable<MySQLIndexDescriptor> {
 
     private final boolean nonUnique;
     private final String keyName;

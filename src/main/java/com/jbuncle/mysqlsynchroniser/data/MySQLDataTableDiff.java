@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.mycompany.mysqldiffgenerator.data;
+package com.jbuncle.mysqlsynchroniser.data;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author James Buncle
  */
-public class MySQLDataTableDiff {
+class MySQLDataTableDiff {
 
     private String primaryKey;
     private final Connection conn;

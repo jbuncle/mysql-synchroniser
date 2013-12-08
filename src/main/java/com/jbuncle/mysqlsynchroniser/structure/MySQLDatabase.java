@@ -19,25 +19,21 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package com.mycompany.mysqldiffgenerator.structure;
+package com.jbuncle.mysqlsynchroniser.structure;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Savepoint;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
- * Hello world!
  *
+ * @author James Buncle
  */
-public class MySQLDatabase extends AbstractMySQLSynchroniser<MySQLDatabase> {
+class MySQLDatabase extends AbstractMySQLSynchroniser<MySQLDatabase> {
 
     private final Map<String, MySQLTable> tables;
 
@@ -70,6 +66,7 @@ public class MySQLDatabase extends AbstractMySQLSynchroniser<MySQLDatabase> {
         }
         return updates;
     }
+
     private static boolean createStatementsSame(
             final Connection sourceConn, final String sourceTable,
             final Connection targetConn, final String targetTable)

@@ -20,7 +20,7 @@
  *  THE SOFTWARE.
  * 
  */
-package com.mycompany.mysqldiffgenerator.structure;
+package com.jbuncle.mysqlsynchroniser.structure;
 
 /**
  *

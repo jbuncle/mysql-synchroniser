@@ -19,9 +19,10 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package com.mycompany.mysqldiffgenerator.structure;
+package com.jbuncle.mysqlsynchroniser.structure;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -29,9 +30,21 @@ import java.util.List;
  *
  * @author James Buncle
  */
-public interface MySQLSynchronise<T> {
+class MySQLUtils {
 
-    public List<String> getSynchroniseUpdates(T t);
+    protected static Connection getConnection(
+            final String host,
+            final int port,
+            final String schema,
+            final String user,
+            final String password) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.jdbc.Driver");
+        return DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + schema, user, password);
+    }
 
-    public void synchronise(Connection conn, T t) throws SQLException;
+    protected static void runUpdates(Connection conn, List<String> updates) throws SQLException {
+        for (String update : updates) {
+            conn.createStatement().execute(update);
+        }
+    }
 }

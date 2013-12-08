@@ -19,7 +19,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package com.mycompany.mysqldiffgenerator.structure;
+package com.jbuncle.mysqlsynchroniser.structure;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -33,7 +33,9 @@ import java.util.Map;
  *
  * @author James Buncle
  */
-public class MySQLView extends AbstractMySQLSynchroniser<MySQLView> implements MySQLComparable<MySQLView>, MySQLTable<MySQLView> {
+class MySQLView
+        extends AbstractMySQLSynchroniser<MySQLView>
+        implements MySQLComparable<MySQLView>, MySQLTable<MySQLView> {
 
     private final String viewCreateStatement;
 
