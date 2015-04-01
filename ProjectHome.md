@@ -1,0 +1,1 @@
+Provides the ability to re-synchronise MySQL table and database structure, i.e. generate an update script for a target table based on the structural differences to a source table
