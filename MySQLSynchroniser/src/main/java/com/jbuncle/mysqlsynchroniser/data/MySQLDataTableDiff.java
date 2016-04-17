@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.jbuncle.mysqlsynchroniser.data;
 
 import java.sql.Connection;
@@ -47,7 +43,7 @@ class MySQLDataTableDiff {
     }
 
     private String getSelectQuery(final String table) {
-        return "SELECT * FROM " + table + " ORDER BY " + this.primaryKey + " ASC;";
+        return "SELECT * FROM `" + table + "` ORDER BY " + this.primaryKey + " ASC;";
     }
 
     private String getStatementColumns() {
@@ -60,7 +56,7 @@ class MySQLDataTableDiff {
         return sb.toString();
     }
 
-    public List<String> getUpdatesByPrimaryKey(Connection targetConn, final String targetTable) throws SQLException {
+    public List<String> getUpdatesByPrimaryKey(final Connection targetConn, final String targetTable) throws SQLException {
         final List<String> updates = new LinkedList<String>();
 
         final ResultSet sourceEntries = getEntries(this.conn, this.table);
@@ -84,7 +80,6 @@ class MySQLDataTableDiff {
                 sourceEntries.next();
                 targetEntries.next();
             } else {
-
 
                 if (sourcePK < targetPK) {
                     updates.add(getInsert(sourceEntries, targetTable));

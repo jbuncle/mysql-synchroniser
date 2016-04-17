@@ -19,19 +19,32 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package com.jbuncle.mysqlsynchroniser.structure;
+package com.jbuncle.mysqlsynchroniser.structure.objects;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.Map;
 
 /**
  *
  * @author James Buncle
  */
-interface MySQLSynchronise<T> {
+public class Database {
 
-    public List<String> getSynchroniseUpdates(T t);
+    private final Map<String, Table> tables;
+    private final Map<String, View> views;
 
-    public void synchronise(Connection conn, T t) throws SQLException;
+    public Database(final Map<String, Table> tables, final Map<String, View> views) {
+        this.tables = tables;
+        this.views = views;
+    }
+
+    public Map<String, Table> getTables() {
+        return tables;
+    }
+
+    public Map<String, View> getViews() {
+        return views;
+    }
+
 }

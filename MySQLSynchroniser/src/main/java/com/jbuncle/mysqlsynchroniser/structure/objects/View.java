@@ -18,15 +18,33 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
- * 
  */
-package com.jbuncle.mysqlsynchroniser.structure;
+package com.jbuncle.mysqlsynchroniser.structure.objects;
 
 /**
  *
  * @author James Buncle
  */
-interface MySQLComparable<T> {
+public class View {
 
-    public boolean isSame(T target);
+    private final String viewName;
+    private final String viewCreateStatement;
+
+    public View(final String viewName, final String viewCreateStatement) {
+        this.viewName = viewName;
+        this.viewCreateStatement = viewCreateStatement;
+    }
+
+    public boolean equals(final View target) {
+        return this.viewCreateStatement.equals(target.viewCreateStatement);
+    }
+
+    public String getCreateStatement() {
+        return this.viewCreateStatement;
+    }
+
+    public String getDropStatement() {
+        return "DROP VIEW IF EXISTS " + this.viewName + ";";
+    }
+
 }

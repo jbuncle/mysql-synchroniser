@@ -19,32 +19,58 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package com.jbuncle.mysqlsynchroniser.structure;
+package com.jbuncle.mysqlsynchroniser.structure.objects;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
  *
  * @author James Buncle
  */
-class MySQLUtils {
+public class Table {
 
-    protected static Connection getConnection(
-            final String host,
-            final int port,
-            final String schema,
-            final String user,
-            final String password) throws ClassNotFoundException, SQLException {
-        Class.forName("com.mysql.jdbc.Driver");
-        return DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + schema, user, password);
+    private final String tableName;
+    private final List<Column> columns;
+    private final List<Index> indexes;
+
+    public Table(
+            final String tableName,
+            final List<Column> columns,
+            final List<Index> indexes) {
+        this.tableName = tableName;
+        this.columns = columns;
+        this.indexes = indexes;
     }
 
-    protected static void runUpdates(Connection conn, List<String> updates) throws SQLException {
-        for (String update : updates) {
-            conn.createStatement().execute(update);
+
+    public List<Column> getColumns() {
+        return this.columns;
+    }
+
+    public Index getIndex(final String keyName) {
+        for (final Index index : getIndexes()) {
+            if (index.getKeyName().equals(keyName)) {
+                return index;
+            }
         }
+        return null;
     }
+
+    public List<Index> getIndexes() {
+        return this.indexes;
+    }
+
+    public Column getColumn(final String columnName) {
+        for (final Column column : this.getColumns()) {
+            if (column.getName().equals(columnName)) {
+                return column;
+            }
+        }
+        return null;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
 }

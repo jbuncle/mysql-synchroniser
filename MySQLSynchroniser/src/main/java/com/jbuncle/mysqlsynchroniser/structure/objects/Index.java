@@ -19,59 +19,24 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package com.jbuncle.mysqlsynchroniser.structure;
-
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.LinkedList;
-import java.util.List;
+package com.jbuncle.mysqlsynchroniser.structure.objects;
 
 /**
  *
  * @author James Buncle
  */
-class MySQLIndexDescriptor implements MySQLComparable<MySQLIndexDescriptor> {
+public class Index {
 
+    private final String tableName;
     private final boolean nonUnique;
     private final String keyName;
     private final String columnName;
 
-    private MySQLIndexDescriptor(
-            final boolean nonUnique,
-            final String keyName,
-            final String columnName) {
+    public Index(final String tableName, boolean nonUnique, String keyName, String columnName) {
+        this.tableName = tableName;
         this.nonUnique = nonUnique;
         this.keyName = keyName;
         this.columnName = columnName;
-    }
-
-    protected static List<MySQLIndexDescriptor> loadIndexes(
-            final Connection conn, final String tableName)
-            throws SQLException {
-        final List<MySQLIndexDescriptor> indexes = new LinkedList<MySQLIndexDescriptor>();
-        ResultSet rs = null;
-        try {
-            rs = conn.createStatement().executeQuery("SHOW INDEXES FROM " + tableName + ";");
-
-            while (rs.next()) {
-                indexes.add(createMySQLIndex(rs));
-            }
-        } finally {
-            try {
-                rs.close();
-            } catch (Exception e) {
-            }
-        }
-        return indexes;
-    }
-
-    private static MySQLIndexDescriptor createMySQLIndex(final ResultSet rs) throws SQLException {
-        final boolean nonUnique = rs.getBoolean("Non_unique");
-        final String keyName = rs.getString("Key_name");
-        final String columnName = rs.getString("Column_name");
-
-        return new MySQLIndexDescriptor(nonUnique, keyName, columnName);
     }
 
     private boolean isPrimaryKey() {
@@ -82,35 +47,35 @@ class MySQLIndexDescriptor implements MySQLComparable<MySQLIndexDescriptor> {
         return !this.nonUnique;
     }
 
-    private String getDropStatement(final String tableName) {
+    private String getDropStatement() {
         if (isPrimaryKey()) {
             return "ALTER TABLE `" + tableName + "` DROP PRIMARY KEY;";
         } else {
-            return "DROP INDEX " + keyName + " ON " + tableName + ";";
+            return "DROP INDEX `" + keyName + "` ON `" + tableName + "`;";
         }
     }
 
-    private String getSetPrimaryKeyStatement(final String tableName) {
+    private String getSetPrimaryKeyStatement() {
         return "ALTER TABLE `" + tableName + "` ADD PRIMARY KEY(`" + this.columnName + "`);";
     }
 
-    private String getAddUniqueStatement(final String tableName) {
+    private String getAddUniqueStatement() {
         return "ALTER TABLE `" + tableName + "` ADD UNIQUE (`" + this.columnName + "`);";
     }
 
-    private String getAddIndex(final String tableName) {
-        return "ALTER TABLE " + tableName + " ADD INDEX (" + this.columnName + ");";
+    private String getAddIndex() {
+        return "ALTER TABLE `" + tableName + "` ADD INDEX (`" + this.columnName + "`);";
     }
 
     protected String getColumnName() {
         return this.columnName;
     }
 
-    protected String getKeyName() {
+    public String getKeyName() {
         return this.keyName;
     }
 
-    public boolean isSame(MySQLIndexDescriptor target) {
+    public boolean equals(Index target) {
         if (isPrimaryKey() ^ target.isPrimaryKey()) {
             return false;
         } else if (isUniqueKey() ^ target.isUniqueKey()) {
@@ -121,20 +86,20 @@ class MySQLIndexDescriptor implements MySQLComparable<MySQLIndexDescriptor> {
         return true;
     }
 
-    public String getCreateStatement(final String tableName) {
+    public String getCreateStatement() {
         if (isPrimaryKey()) {
             //Primary key
-            return getSetPrimaryKeyStatement(tableName);
+            return getSetPrimaryKeyStatement();
         } else if (isUniqueKey()) {
             //Unique key
-            return getAddUniqueStatement(tableName);
+            return getAddUniqueStatement();
         } else {
             //Just a key/index
-            return getAddIndex(tableName);
+            return getAddIndex();
         }
     }
 
-    public String getDeleteStatament(final String tableName) {
-        return getDropStatement(tableName);
+    public String getDeleteStatament() {
+        return getDropStatement();
     }
 }

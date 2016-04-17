@@ -18,22 +18,18 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
- * 
  */
-package com.jbuncle.mysqlsynchroniser.structure;
+package com.jbuncle.mysqlsynchroniser.structure.interfaces;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import com.jbuncle.mysqlsynchroniser.structure.interfaces.Diffable;
 
 /**
  *
  * @author James Buncle
  */
-abstract class AbstractMySQLSynchroniser<TargetType> implements MySQLSynchronise<TargetType> {
+public interface Createable<TargetType> extends Diffable<TargetType> {
 
-    public void synchronise(Connection conn, TargetType target) throws SQLException {
-        for (final String update : getSynchroniseUpdates(target)) {
-            conn.createStatement().execute(update);
-        }
-    }
+    public String getCreateStatement();
+
+    public String getDropStatement();
 }
