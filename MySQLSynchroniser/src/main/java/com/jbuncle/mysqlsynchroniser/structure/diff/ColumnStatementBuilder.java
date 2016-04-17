@@ -47,10 +47,6 @@ public class ColumnStatementBuilder {
         return getAddColumnStatement() + " AFTER `" + after.getColumnName() + "`;";
     }
 
-    public String getInsertColumnLastStatement() {
-        return getAddColumnStatement() + ";";
-    }
-
     public String getInsertColumnFirstStatement() {
         return getAddColumnStatement() + " FIRST;";
     }

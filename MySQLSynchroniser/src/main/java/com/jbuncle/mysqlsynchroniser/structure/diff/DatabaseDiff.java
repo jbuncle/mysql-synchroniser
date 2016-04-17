@@ -26,11 +26,11 @@ package com.jbuncle.mysqlsynchroniser.structure.diff;
 import com.jbuncle.mysqlsynchroniser.structure.objects.Table;
 import com.jbuncle.mysqlsynchroniser.structure.objects.Database;
 import com.jbuncle.mysqlsynchroniser.structure.objects.View;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.sql.DataSource;
 
 /**
  *
@@ -54,7 +54,7 @@ public class DatabaseDiff {
         return target;
     }
 
-    private List<String> getTableUpdates(final Connection sourceConnection) throws SQLException {
+    private List<String> getTableUpdates(final DataSource sourceConnection) throws SQLException {
 
         final List<String> updates = new LinkedList<String>();
         final Map<String, Table> targetTables = this.getTarget().getTables();
@@ -105,7 +105,7 @@ public class DatabaseDiff {
         return updates;
     }
 
-    public List<String> diff(final Connection sourceConnection) {
+    public List<String> diff(final DataSource sourceConnection) {
         try {
 
             final List<String> list = new LinkedList<String>();

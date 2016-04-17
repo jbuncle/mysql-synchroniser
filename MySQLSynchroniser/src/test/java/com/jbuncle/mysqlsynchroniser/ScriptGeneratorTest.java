@@ -23,8 +23,8 @@
  */
 package com.jbuncle.mysqlsynchroniser;
 
+import com.jbuncle.mysqlsynchroniser.util.ConnectionStrategy;
 import static com.jbuncle.mysqlsynchroniser.util.ListUtils.implode;
-import com.jbuncle.mysqlsynchroniser.util.MySQLUtils;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -38,42 +38,50 @@ import junit.framework.TestCase;
  */
 public class ScriptGeneratorTest extends TestCase {
 
-    private Connection source;
-    private Connection target;
+    private ConnectionStrategy source;
+    private ConnectionStrategy target;
 
-    public ScriptGeneratorTest(String testName) {
+    public ScriptGeneratorTest(final String testName) {
         super(testName);
+    }
+
+    private static MysqlDataSource createDataSource(final String host, final String user, final String password) {
+        final MysqlDataSource dataSource = new MysqlDataSource();
+        dataSource.setUser(user);
+        dataSource.setPassword(password);
+        dataSource.setServerName(host);
+        return dataSource;
+    }
+
+    private static MysqlDataSource createDataSource(final String host, final String schema, final String user, final String password) {
+        final MysqlDataSource dataSource = createDataSource(host, user, password);
+        dataSource.setDatabaseName(schema);
+        return dataSource;
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
 
-        MysqlDataSource dataSource = new MysqlDataSource();
-        dataSource.setUser("root");
-        dataSource.setPassword("");
-        dataSource.setServerName("192.168.99.101");
-        Connection conn = dataSource.getConnection();
-
-        conn.createStatement().execute("DROP DATABASE IF EXISTS source;");
-        conn.createStatement().execute("DROP DATABASE IF EXISTS target;");
-        conn.createStatement().execute("CREATE DATABASE source;");
-        conn.createStatement().execute("CREATE DATABASE target;");
+        MysqlDataSource dataSource = createDataSource("192.168.99.101", "root", "");
+        new ConnectionStrategy(dataSource).update(
+                "DROP DATABASE IF EXISTS source;",
+                "DROP DATABASE IF EXISTS target;",
+                "CREATE DATABASE source;",
+                "CREATE DATABASE target;"
+        );
 
         //192.168.99.101:3306
-        dataSource.setDatabaseName("source");
-        this.source = dataSource.getConnection();
-        dataSource.setDatabaseName("target");
-        this.target = dataSource.getConnection();
+        this.source = new ConnectionStrategy(createDataSource("192.168.99.101", "source", "root", ""));
+        this.target = new ConnectionStrategy(createDataSource("192.168.99.101", "target", "root", ""));
 
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        source.createStatement().execute("DROP DATABASE source;");
-        target.createStatement().execute("DROP DATABASE target;");
-
+        source.update("DROP DATABASE source;");
+        target.update("DROP DATABASE target;");
     }
 
     /**
@@ -81,7 +89,7 @@ public class ScriptGeneratorTest extends TestCase {
      */
     public void testCompareTable() throws Exception {
         System.out.println("compareTable");
-        source.createStatement().execute("CREATE TABLE pet ("
+        source.update("CREATE TABLE pet ("
                 + "name VARCHAR(20), "
                 + "owner VARCHAR(20), "
                 + "species VARCHAR(20), "
@@ -91,12 +99,14 @@ public class ScriptGeneratorTest extends TestCase {
                 + "CONSTRAINT pk_PersonID PRIMARY KEY (name),"
                 + "UNIQUE KEY `mykey` (`owner`, `species`)"
                 + ");");
-        target.createStatement().execute("CREATE TABLE pet ("
+        target.update("CREATE TABLE pet ("
                 + "name VARCHAR(20), "
                 + "owner VARCHAR(20), "
                 + "species VARCHAR(20) NOT NULL, "
                 + "type VARCHAR(20) NOT NULL, "
-                + "death DATE);");
+                + "death DATE, "
+                + "UNIQUE KEY `somekey` (`death`)"
+                + ");");
 
         final String table = "pet";
         final String expResult
@@ -107,16 +117,17 @@ public class ScriptGeneratorTest extends TestCase {
                 + "ALTER TABLE `pet` ADD `sex` char(1) COLLATE latin1_swedish_ci NULL  COMMENT '' AFTER `species`;"
                 + "ALTER TABLE `pet` ADD `birth` date NULL  COMMENT '' AFTER `sex`;"
                 + "ALTER TABLE `pet` CHANGE `death` `death` date NOT NULL  COMMENT '';"
+                + "DROP INDEX `somekey` ON `pet`;"
                 + "ALTER TABLE `pet` ADD PRIMARY KEY(`name`);"
                 + "ALTER TABLE `pet` ADD UNIQUE `mykey` (`owner`, `species`);";
-        final List<String> result = ScriptGenerator.compareTable(source, target, table);
+        final List<String> result = ScriptGenerator.compareTable(source.getDataSource(), target.getDataSource(), table);
 
         assertEquals(expResult, implode("", result));
 
-        MySQLUtils.runUpdates(target, result);
+        target.update(result);
 
-        compareQueries(source, target, "DESCRIBE " + table);
-        compareQueries(source, target, "SHOW INDEXES FROM " + table);
+        compareQueries(source.getConnection(), target.getConnection(), "DESCRIBE " + table);
+        compareQueries(source.getConnection(), target.getConnection(), "SHOW INDEXES FROM " + table);
     }
 
     private static void compareQueries(final Connection source, final Connection target, final String query)

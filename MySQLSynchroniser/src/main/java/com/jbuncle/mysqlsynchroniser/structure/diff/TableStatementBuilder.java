@@ -24,9 +24,11 @@
 package com.jbuncle.mysqlsynchroniser.structure.diff;
 
 import com.jbuncle.mysqlsynchroniser.structure.objects.Table;
-import java.sql.Connection;
+import com.jbuncle.mysqlsynchroniser.util.ConnectionStrategy;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+import javax.sql.DataSource;
 
 /**
  *
@@ -44,7 +46,7 @@ class TableStatementBuilder {
         return "DROP TABLE " + baseTable.getTableName() + ";";
     }
 
-    public String getCreateStatement(Connection conn) {
+    public String getCreateStatement(DataSource conn) {
         try {
             return getCreateStatement(conn, this.baseTable.getTableName());
         } catch (SQLException ex) {
@@ -52,23 +54,17 @@ class TableStatementBuilder {
         }
     }
 
-    private static String getCreateStatement(final Connection conn, final String table) throws SQLException {
-        final String query = "SHOW CREATE TABLE " + table + ";";
-        ResultSet rs = null;
-        try {
-            rs = conn.createStatement().executeQuery(query);
-            final String createStatement;
-            if (rs.next()) {
-                createStatement = rs.getString("Create Table");
-            } else {
-                createStatement = null;
+    private static String getCreateStatement(final DataSource conn, final String table) throws SQLException {
+        final List<String> results = new ConnectionStrategy(conn).query("SHOW CREATE TABLE " + table + ";", new ConnectionStrategy.RowMapper<String>() {
+            @Override
+            public String rowToObject(ResultSet rs) throws SQLException {
+                return rs.getString("Create Table");
             }
-            return createStatement;
-        } finally {
-            try {
-                rs.close();
-            } catch (Exception e) {
-            }
+        });
+        if (results.isEmpty()) {
+            return null;
+        } else {
+            return results.get(0);
         }
     }
 

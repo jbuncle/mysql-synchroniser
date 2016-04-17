@@ -29,13 +29,13 @@ import com.jbuncle.mysqlsynchroniser.structure.objects.Column;
 import com.jbuncle.mysqlsynchroniser.structure.objects.Index;
 import com.jbuncle.mysqlsynchroniser.structure.objects.Table;
 import com.jbuncle.mysqlsynchroniser.structure.objects.Database;
-import java.sql.Connection;
+import com.jbuncle.mysqlsynchroniser.util.ConnectionStrategy;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.sql.DataSource;
 
 /**
  *
@@ -43,51 +43,41 @@ import java.util.Map;
  */
 public class MySQL {
 
-    private final Connection conn;
+    private final ConnectionStrategy connectionStrategy;
 
-    public MySQL(final Connection conn) {
-        this.conn = conn;
+    public MySQL(final DataSource dataSource) {
+        this.connectionStrategy = new ConnectionStrategy(dataSource);
     }
 
     public Database loadDatabase() throws SQLException {
-        return new Database(loadTables(conn), loadViews(conn));
+        return new Database(loadTables(), loadViews());
     }
-
-    public static Map<String, Table> loadTables(final Connection conn) throws SQLException {
-        final Map<String, Table> tables = new HashMap<String, Table>();
-        for (final String tableName : getTables(conn)) {
-            Table table = loadTable(conn, tableName);
+    public Map<String, Table> loadTables() throws SQLException {
+        final Map<String, Table> tables = new HashMap<>();
+        for (final String tableName : getTables()) {
+            Table table = loadTable(tableName);
             tables.put(tableName, table);
         }
         return tables;
     }
 
-    public static Table loadTable(final Connection conn, final String tableName) throws SQLException {
-        final List<Column> columns = loadFromShowFullColumns(conn, tableName);
-        final List<Index> indexes = loadIndexes(conn, tableName);
+    public Table loadTable(final String tableName) throws SQLException {
+        final List<Column> columns = loadFromShowFullColumns(tableName);
+        final List<Index> indexes = loadIndexes(tableName);
         final Table table = new Table(tableName, columns, indexes);
         return table;
     }
 
-    private static List<String> getTables(final Connection conn) throws SQLException {
-        final List<String> tables = new LinkedList<String>();
-        ResultSet rs = null;
-        try {
-            rs = conn.createStatement().executeQuery("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE';");
-            while (rs.next()) {
-                final String tableName = rs.getString(1);
-                tables.add(tableName);
+    private List<String> getTables() throws SQLException {
+        return this.connectionStrategy.query("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE';", new ConnectionStrategy.RowMapper<String>() {
+            @Override
+            public String rowToObject(ResultSet rs) throws SQLException {
+                return rs.getString(1);
             }
-        } finally {
-            try {
-                rs.close();
-            } catch (Exception e) {
-            }
-        }
-        return tables;
+        });
     }
 
-    private static Column loadFromShowFullColumns(final ResultSet rs) throws SQLException {
+    private Column loadFromShowFullColumns(final ResultSet rs) throws SQLException {
         final String field = rs.getString("Field");
         final String type = rs.getString("Type");
         final boolean nullable = rs.getString("Null").equals("YES");
@@ -100,80 +90,60 @@ public class MySQL {
         return new Column(field, type, nullable, key, defaultValue, extra, collation, comment);
     }
 
-    public static List<Column> loadFromShowFullColumns(Connection conn, final String tableName) throws SQLException {
-        List<Column> columns = new LinkedList<Column>();
-        final ResultSet rs = conn.createStatement().executeQuery("SHOW FULL COLUMNS IN " + tableName + ";");
+    public List<Column> loadFromShowFullColumns(final String tableName) throws SQLException {
 
-        while (rs.next()) {
-            columns.add(loadFromShowFullColumns(rs));
-        }
-        return columns;
+        return this.connectionStrategy.query("SHOW FULL COLUMNS IN " + tableName + ";", new ConnectionStrategy.RowMapper<Column>() {
+            @Override
+            public Column rowToObject(ResultSet rs) throws SQLException {
+                return loadFromShowFullColumns(rs);
+            }
+        });
     }
 
-    public static Map<String, View> loadViews(final Connection conn)
+    private Map<String, View> loadViews()
             throws SQLException {
         final Map<String, View> views = new HashMap<String, View>();
-        for (final String viewName : getViewNames(conn)) {
-            views.put(viewName, new View(viewName, loadCreateStatement(conn, viewName)));
+        for (final String viewName : getViewNames()) {
+            views.put(viewName, new View(viewName, loadCreateStatement(viewName)));
         }
         return views;
     }
 
-    private static List<String> getViewNames(final Connection conn) throws SQLException {
-        final LinkedList<String> views = new LinkedList<String>();
-        ResultSet rs = null;
-        try {
-            rs = conn.createStatement().executeQuery("SHOW FULL TABLES WHERE TABLE_TYPE LIKE 'VIEW';");
-            while (rs.next()) {
-                views.add(rs.getString(1));
+    private List<String> getViewNames() throws SQLException {
+        return this.connectionStrategy.query("SHOW FULL TABLES WHERE TABLE_TYPE LIKE 'VIEW';", new ConnectionStrategy.RowMapper<String>() {
+            @Override
+            public String rowToObject(ResultSet rs) throws SQLException {
+                return rs.getString(1);
             }
-        } finally {
-            try {
-                rs.close();
-            } catch (Exception e) {
-            }
-        }
-        return views;
+        });
     }
 
-    private static String loadCreateStatement(final Connection conn, final String viewName)
+    private String loadCreateStatement(final String viewName)
             throws SQLException {
-        ResultSet rs = null;
-        try {
-            rs = conn.createStatement().executeQuery("SHOW CREATE VIEW " + viewName + ";");
-            if (rs.next()) {
+        return this.connectionStrategy.query(viewName, new ConnectionStrategy.RowMapper<String>() {
+            @Override
+            public String rowToObject(ResultSet rs) throws SQLException {
                 return rs.getString("Create View");
             }
-        } finally {
-            try {
-                rs.close();
-            } catch (Exception e) {
-            }
-        }
-        return null;
+        }).get(0);
     }
 
-    public static List<Index> loadIndexes(
-            final Connection conn, final String tableName)
+    public List<Index> loadIndexes(final String tableName)
             throws SQLException {
-        ResultSet rs = null;
-        try {
-            rs = conn.createStatement().executeQuery("SHOW INDEXES FROM `" + tableName + "`;");
 
-            final IndexesBuilder indexesBuilder = new IndexesBuilder(tableName);
-            while (rs.next()) {
+        final IndexesBuilder indexesBuilder = new IndexesBuilder(tableName);
+        this.connectionStrategy.query("SHOW INDEXES FROM `" + tableName + "`;",
+                new ConnectionStrategy.RowMapper<String>() {
+            @Override
+            public String rowToObject(ResultSet rs) throws SQLException {
                 final boolean nonUnique = rs.getBoolean("Non_unique");
                 final String keyName = rs.getString("Key_name");
                 final String columnName = rs.getString("Column_name");
                 indexesBuilder.addIndex(keyName, nonUnique, columnName);
+                return null;
             }
-            return indexesBuilder.getIndexes();
-        } finally {
-            try {
-                rs.close();
-            } catch (Exception e) {
-            }
-        }
+        });
+        return indexesBuilder.getIndexes();
     }
 
 }

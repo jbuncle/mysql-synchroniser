@@ -43,7 +43,11 @@ public class ConnectionStrategy {
         this.dataSource = dataSource;
     }
 
-    private Connection getConnection() throws SQLException {
+    public DataSource getDataSource() {
+        return dataSource;
+    }
+
+    public Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }
 
@@ -64,5 +68,31 @@ public class ConnectionStrategy {
             }
         }
         return objects;
+    }
+
+    public int[] update(final String... queries) throws SQLException {
+        int[] rowCounts = new int[queries.length];
+        try (final Connection conn = getConnection();
+                final Statement stmt = conn.createStatement();) {
+
+            int index = 0;
+            for (final String query : queries) {
+                rowCounts[index] = stmt.executeUpdate(query);
+            }
+        }
+        return rowCounts;
+    }
+
+    public int[] update(final List<String> queries) throws SQLException {
+        int[] rowCounts = new int[queries.size()];
+        try (final Connection conn = getConnection();
+                final Statement stmt = conn.createStatement();) {
+
+            int index = 0;
+            for (final String query : queries) {
+                rowCounts[index] = stmt.executeUpdate(query);
+            }
+        }
+        return rowCounts;
     }
 }

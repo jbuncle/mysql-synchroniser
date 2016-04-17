@@ -38,7 +38,7 @@ public class TableDiff {
 
     public static List<String> diff(final Table source, final Table target) {
         try {
-            final List<String> updates = new LinkedList<String>();
+            final List<String> updates = new LinkedList<>();
             //Get deleted columns
             updates.addAll(getDeletedColumns(source, target));
 
@@ -58,7 +58,7 @@ public class TableDiff {
     }
 
     private static List<String> getUpdatedColumns(final Table source, final Table target) throws SQLException {
-        final List<String> updates = new LinkedList<String>();
+        final List<String> updates = new LinkedList<>();
         Column lastColumn = null;
         for (final Column column : source.getColumns()) {
             ColumnStatementBuilder scriptBuilder = new ColumnStatementBuilder(target.getTableName(), column);
@@ -81,7 +81,7 @@ public class TableDiff {
     }
 
     private static List<String> getUpdatedIndexes(final Table source, final Table target) throws SQLException {
-        final List<String> updates = new LinkedList<String>();
+        final List<String> updates = new LinkedList<>();
         for (final Index sourceIndex : source.getIndexes()) {
             final String sourceKeyName = sourceIndex.getKeyName();
             final Index targetIndex = target.getIndex(sourceKeyName);
@@ -98,7 +98,7 @@ public class TableDiff {
     }
 
     private static List<String> getDeletedIndexes(final Table source, final Table target) throws SQLException {
-        final List<String> updates = new LinkedList<String>();
+        final List<String> updates = new LinkedList<>();
 
         for (final Index index : target.getIndexes()) {
             final String indexKeyName = index.getKeyName();
@@ -112,7 +112,7 @@ public class TableDiff {
     }
 
     private static List<String> getDeletedColumns(final Table source, final Table target) throws SQLException {
-        final List<String> updates = new LinkedList<String>();
+        final List<String> updates = new LinkedList<>();
         //Work out deletes
         for (final Column column : target.getColumns()) {
             final Column thisColumn = source.getColumn(column.getName());
