@@ -21,6 +21,9 @@
  */
 package com.jbuncle.mysqlsynchroniser.structure.objects;
 
+import com.jbuncle.mysqlsynchroniser.util.ListUtils;
+import java.util.List;
+
 /**
  *
  * @author James Buncle
@@ -30,13 +33,17 @@ public class Index {
     private final String tableName;
     private final boolean nonUnique;
     private final String keyName;
-    private final String columnName;
+    private final List<String> columnNames;
 
-    public Index(final String tableName, boolean nonUnique, String keyName, String columnName) {
+    public Index(
+            final String tableName,
+            final boolean nonUnique,
+            final String keyName,
+            final List<String> columnNames) {
         this.tableName = tableName;
         this.nonUnique = nonUnique;
         this.keyName = keyName;
-        this.columnName = columnName;
+        this.columnNames = columnNames;
     }
 
     private boolean isPrimaryKey() {
@@ -55,20 +62,32 @@ public class Index {
         }
     }
 
+    private String getColumnString() {
+        return "`" + ListUtils.implode("`, `", this.columnNames) + "`";
+    }
+
     private String getSetPrimaryKeyStatement() {
-        return "ALTER TABLE `" + tableName + "` ADD PRIMARY KEY(`" + this.columnName + "`);";
+        return "ALTER TABLE `" + tableName + "` ADD PRIMARY KEY("
+                + getColumnString()
+                + ");";
     }
 
     private String getAddUniqueStatement() {
-        return "ALTER TABLE `" + tableName + "` ADD UNIQUE (`" + this.columnName + "`);";
+        return "ALTER TABLE `" + tableName + "` ADD UNIQUE "
+                + "`" + this.keyName + "` ("
+                + getColumnString()
+                + ");";
     }
 
     private String getAddIndex() {
-        return "ALTER TABLE `" + tableName + "` ADD INDEX (`" + this.columnName + "`);";
+        return "ALTER TABLE `" + tableName + "` ADD INDEX "
+                + "`" + this.keyName + "` ("
+                + getColumnString()
+                + ");";
     }
 
-    protected String getColumnName() {
-        return this.columnName;
+    public List<String> getColumnNames() {
+        return this.columnNames;
     }
 
     public String getKeyName() {
@@ -80,7 +99,7 @@ public class Index {
             return false;
         } else if (isUniqueKey() ^ target.isUniqueKey()) {
             return false;
-        } else if (!this.columnName.equals(target.columnName)) {
+        } else if (!this.columnNames.equals(target.columnNames)) {
             return false;
         }
         return true;

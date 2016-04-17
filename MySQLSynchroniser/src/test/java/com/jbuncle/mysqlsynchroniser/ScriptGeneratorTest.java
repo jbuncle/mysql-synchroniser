@@ -23,6 +23,7 @@
  */
 package com.jbuncle.mysqlsynchroniser;
 
+import static com.jbuncle.mysqlsynchroniser.util.ListUtils.implode;
 import com.jbuncle.mysqlsynchroniser.util.MySQLUtils;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import java.sql.Connection;
@@ -86,23 +87,28 @@ public class ScriptGeneratorTest extends TestCase {
                 + "species VARCHAR(20), "
                 + "sex CHAR(1), "
                 + "birth DATE, "
-                + "death DATE,"
-                + "CONSTRAINT pk_PersonID PRIMARY KEY (name)"
+                + "death DATE NOT NULL,"
+                + "CONSTRAINT pk_PersonID PRIMARY KEY (name),"
+                + "UNIQUE KEY `mykey` (`owner`, `species`)"
                 + ");");
         target.createStatement().execute("CREATE TABLE pet ("
                 + "name VARCHAR(20), "
                 + "owner VARCHAR(20), "
-                + "species VARCHAR(20), "
-                + "type VARCHAR(20), "
+                + "species VARCHAR(20) NOT NULL, "
+                + "type VARCHAR(20) NOT NULL, "
                 + "death DATE);");
 
         final String table = "pet";
         final String expResult
                 = "ALTER TABLE `pet` DROP `type`;"
                 + "ALTER TABLE `pet` CHANGE `name` `name` varchar(20) COLLATE latin1_swedish_ci NOT NULL  COMMENT '';"
+                + "ALTER TABLE `pet` CHANGE `owner` `owner` varchar(20) COLLATE latin1_swedish_ci NULL  COMMENT '';"
+                + "ALTER TABLE `pet` CHANGE `species` `species` varchar(20) COLLATE latin1_swedish_ci NULL  COMMENT '';"
                 + "ALTER TABLE `pet` ADD `sex` char(1) COLLATE latin1_swedish_ci NULL  COMMENT '' AFTER `species`;"
                 + "ALTER TABLE `pet` ADD `birth` date NULL  COMMENT '' AFTER `sex`;"
-                + "ALTER TABLE `pet` ADD PRIMARY KEY(`name`);";
+                + "ALTER TABLE `pet` CHANGE `death` `death` date NOT NULL  COMMENT '';"
+                + "ALTER TABLE `pet` ADD PRIMARY KEY(`name`);"
+                + "ALTER TABLE `pet` ADD UNIQUE `mykey` (`owner`, `species`);";
         final List<String> result = ScriptGenerator.compareTable(source, target, table);
 
         assertEquals(expResult, implode("", result));
@@ -131,13 +137,5 @@ public class ScriptGeneratorTest extends TestCase {
         if (sourceRs.next() ^ targetRs.next()) {
             fail("Result sets differ in length");
         }
-    }
-
-    public static String implode(final String separator, final Iterable<String> data) {
-        final StringBuilder sb = new StringBuilder();
-        for (String iterable : data) {
-            sb.append(iterable).append(separator);
-        }
-        return sb.substring(0, sb.length() - separator.length());
     }
 }

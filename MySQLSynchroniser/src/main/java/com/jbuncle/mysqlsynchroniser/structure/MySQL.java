@@ -23,6 +23,7 @@
  */
 package com.jbuncle.mysqlsynchroniser.structure;
 
+import com.jbuncle.mysqlsynchroniser.structure.diff.IndexesBuilder;
 import com.jbuncle.mysqlsynchroniser.structure.objects.View;
 import com.jbuncle.mysqlsynchroniser.structure.objects.Column;
 import com.jbuncle.mysqlsynchroniser.structure.objects.Index;
@@ -155,28 +156,24 @@ public class MySQL {
     public static List<Index> loadIndexes(
             final Connection conn, final String tableName)
             throws SQLException {
-        final List<Index> indexes = new LinkedList<Index>();
         ResultSet rs = null;
         try {
             rs = conn.createStatement().executeQuery("SHOW INDEXES FROM `" + tableName + "`;");
 
+            final IndexesBuilder indexesBuilder = new IndexesBuilder(tableName);
             while (rs.next()) {
-                indexes.add(createMySQLIndex(tableName, rs));
+                final boolean nonUnique = rs.getBoolean("Non_unique");
+                final String keyName = rs.getString("Key_name");
+                final String columnName = rs.getString("Column_name");
+                indexesBuilder.addIndex(keyName, nonUnique, columnName);
             }
+            return indexesBuilder.getIndexes();
         } finally {
             try {
                 rs.close();
             } catch (Exception e) {
             }
         }
-        return indexes;
     }
 
-    private static Index createMySQLIndex(final String table, final ResultSet rs) throws SQLException {
-        final boolean nonUnique = rs.getBoolean("Non_unique");
-        final String keyName = rs.getString("Key_name");
-        final String columnName = rs.getString("Column_name");
-
-        return new Index(table, nonUnique, keyName, columnName);
-    }
 }
