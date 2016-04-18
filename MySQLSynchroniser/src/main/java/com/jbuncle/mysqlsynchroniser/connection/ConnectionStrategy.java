@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.jbuncle.mysqlsynchroniser.util;
+package com.jbuncle.mysqlsynchroniser.connection;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -51,10 +51,6 @@ public class ConnectionStrategy {
         return dataSource.getConnection();
     }
 
-    public interface RowMapper<T> {
-
-        public T rowToObject(ResultSet rs) throws SQLException;
-    }
 
     public <T> List<T> query(final String query, final RowMapper<T> rowMapper) throws SQLException {
         final List<T> objects = new LinkedList<>();

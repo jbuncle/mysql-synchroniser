@@ -21,8 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.jbuncle.mysqlsynchroniser.util;
+package com.jbuncle.mysqlsynchroniser.structure.diff.builder;
 
+import com.jbuncle.mysqlsynchroniser.structure.objects.Index;
+import com.jbuncle.mysqlsynchroniser.util.ListUtils;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -30,19 +32,33 @@ import java.util.List;
  *
  * @author James Buncle <jbuncle@hotmail.com>
  */
-public class ListUtils {
-    
-    public static <T>  List<T> createListFromItem(T t){
-        List<T> list = new LinkedList<>();
-        list.add(t);
+public class IndexStatementStrategy implements StatementStrategy<Index> {
+
+    @Override
+    public List<String> getDeleteStatement(Index t) {
+        return ListUtils.createListFromItem(t.getDeleteStatament());
+    }
+
+    @Override
+    public List<String> getUpdateStatement(Index from, Index to) {
+        List<String> list = new LinkedList<>();
+        list.add(from.getDeleteStatament());
+        list.add(to.getCreateStatement());
         return list;
     }
 
-    public static String implode(final String separator, final Iterable<String> data) {
-        final StringBuilder sb = new StringBuilder();
-        for (String iterable : data) {
-            sb.append(iterable).append(separator);
-        }
-        return sb.substring(0, sb.length() - separator.length());
+    @Override
+    public List<String> getAddStatement(Index t) {
+        return ListUtils.createListFromItem(t.getCreateStatement());
     }
+
+    @Override
+    public void same(Index t) {
+    }
+
+    @Override
+    public String getKey(Index t) {
+        return t.getKeyName();
+    }
+
 }

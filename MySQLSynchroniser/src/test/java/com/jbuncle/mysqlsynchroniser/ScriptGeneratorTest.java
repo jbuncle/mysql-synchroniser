@@ -23,13 +23,16 @@
  */
 package com.jbuncle.mysqlsynchroniser;
 
-import com.jbuncle.mysqlsynchroniser.util.ConnectionStrategy;
+import com.jbuncle.mysqlsynchroniser.connection.ArrayRowMapper;
+import com.jbuncle.mysqlsynchroniser.connection.ConnectionStrategy;
+import com.jbuncle.mysqlsynchroniser.connection.RowMapper;
 import static com.jbuncle.mysqlsynchroniser.util.ListUtils.implode;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
-import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import junit.framework.TestCase;
 
 /**
@@ -97,7 +100,8 @@ public class ScriptGeneratorTest extends TestCase {
                 + "birth DATE, "
                 + "death DATE NOT NULL,"
                 + "CONSTRAINT pk_PersonID PRIMARY KEY (name),"
-                + "UNIQUE KEY `mykey` (`owner`, `species`)"
+                + "UNIQUE KEY `mykey` (`owner`, `species`),"
+                + "UNIQUE KEY `updatedkey` (`owner`, `death`)"
                 + ");");
         target.update("CREATE TABLE pet ("
                 + "name VARCHAR(20), "
@@ -105,48 +109,73 @@ public class ScriptGeneratorTest extends TestCase {
                 + "species VARCHAR(20) NOT NULL, "
                 + "type VARCHAR(20) NOT NULL, "
                 + "death DATE, "
-                + "UNIQUE KEY `somekey` (`death`)"
+                + "UNIQUE KEY `somekey` (`death`),"
+                + "UNIQUE KEY `updatedkey` (`owner`)"
                 + ");");
 
         final String table = "pet";
         final String expResult
-                = "ALTER TABLE `pet` DROP `type`;"
-                + "ALTER TABLE `pet` CHANGE `name` `name` varchar(20) COLLATE latin1_swedish_ci NOT NULL  COMMENT '';"
+                = "ALTER TABLE `pet` CHANGE `name` `name` varchar(20) COLLATE latin1_swedish_ci NOT NULL  COMMENT '';"
                 + "ALTER TABLE `pet` CHANGE `owner` `owner` varchar(20) COLLATE latin1_swedish_ci NULL  COMMENT '';"
                 + "ALTER TABLE `pet` CHANGE `species` `species` varchar(20) COLLATE latin1_swedish_ci NULL  COMMENT '';"
                 + "ALTER TABLE `pet` ADD `sex` char(1) COLLATE latin1_swedish_ci NULL  COMMENT '' AFTER `species`;"
                 + "ALTER TABLE `pet` ADD `birth` date NULL  COMMENT '' AFTER `sex`;"
                 + "ALTER TABLE `pet` CHANGE `death` `death` date NOT NULL  COMMENT '';"
-                + "DROP INDEX `somekey` ON `pet`;"
+                + "ALTER TABLE `pet` DROP `type`;"
+                + "DROP INDEX `updatedkey` ON `pet`;ALTER TABLE `pet` ADD UNIQUE `updatedkey` (`owner`, `death`);"
                 + "ALTER TABLE `pet` ADD PRIMARY KEY(`name`);"
-                + "ALTER TABLE `pet` ADD UNIQUE `mykey` (`owner`, `species`);";
+                + "ALTER TABLE `pet` ADD UNIQUE `mykey` (`owner`, `species`);"
+                + "DROP INDEX `somekey` ON `pet`;";
         final List<String> result = ScriptGenerator.compareTable(source.getDataSource(), target.getDataSource(), table);
 
         assertEquals(expResult, implode("", result));
-
         target.update(result);
 
-        compareQueries(source.getConnection(), target.getConnection(), "DESCRIBE " + table);
-        compareQueries(source.getConnection(), target.getConnection(), "SHOW INDEXES FROM " + table);
+        compareQueries("DESCRIBE " + table, false);
+        compareQueries("SHOW INDEXES FROM " + table, true);
     }
 
-    private static void compareQueries(final Connection source, final Connection target, final String query)
+    private void compareQueries(final String query, final boolean ignoreOrder)
             throws SQLException {
-        final ResultSet sourceRs = source.createStatement().executeQuery(query);
-        final ResultSet targetRs = target.createStatement().executeQuery(query);
-        while (sourceRs.next() && targetRs.next()) {
-            final int sourceColCount = sourceRs.getMetaData().getColumnCount();
-            final int targetColCount = targetRs.getMetaData().getColumnCount();
+        final RowMapper<Object[]> rowMapper = new ArrayRowMapper();
+        if (ignoreOrder) {
+            final LinkedHashSet<Object[]> sourceData = new LinkedHashSet<>(this.source.query(query, rowMapper));
+            final LinkedHashSet<Object[]> targetData = new LinkedHashSet<>(this.target.query(query, rowMapper));
+            if (sourceData.size() != targetData.size()) {
+                fail("Results count differs in length");
+            }
 
-            if (sourceColCount != targetColCount) {
-                fail("Column count differs in length");
+            for (Object[] objects : targetData) {
+                if (!setContainsArray(objects, sourceData)) {
+                    fail("Target data has extra entry: '" + Arrays.toString(objects) + "'");
+                }
             }
-            for (int i = 1; i <= sourceColCount; i++) {
-                assertEquals(sourceRs.getObject(i), targetRs.getObject(i));
+            for (Object[] objects : sourceData) {
+                if (!setContainsArray(objects, targetData)) {
+                    fail("Target data missing entry: '" + Arrays.toString(objects) + "'");
+                }
             }
-        }
-        if (sourceRs.next() ^ targetRs.next()) {
-            fail("Result sets differ in length");
+        } else {
+            final List<Object[]> sourceData = this.source.query(query, rowMapper);
+            final List<Object[]> targetData = this.target.query(query, rowMapper);
+            for (int i = 0; i < sourceData.size(); i++) {
+                if (!Arrays.equals(sourceData.get(i), targetData.get(i))) {
+                    fail("Source data "
+                            + "'" + Arrays.toString(sourceData.get(i)) + "'"
+                            + " is not equal to "
+                            + "'" + Arrays.toString(targetData.get(i)) + "'");
+                }
+            }
         }
     }
+
+    private static boolean setContainsArray(final Object[] arr, final Set<Object[]> set) {
+        for (final Object[] objects : set) {
+            if (Arrays.equals(objects, arr)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

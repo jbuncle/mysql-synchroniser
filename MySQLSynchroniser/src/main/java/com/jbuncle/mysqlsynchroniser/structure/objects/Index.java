@@ -54,14 +54,6 @@ public class Index {
         return !this.nonUnique;
     }
 
-    private String getDropStatement() {
-        if (isPrimaryKey()) {
-            return "ALTER TABLE `" + tableName + "` DROP PRIMARY KEY;";
-        } else {
-            return "DROP INDEX `" + keyName + "` ON `" + tableName + "`;";
-        }
-    }
-
     private String getColumnString() {
         return "`" + ListUtils.implode("`, `", this.columnNames) + "`";
     }
@@ -119,6 +111,10 @@ public class Index {
     }
 
     public String getDeleteStatament() {
-        return getDropStatement();
+        if (isPrimaryKey()) {
+            return "ALTER TABLE `" + tableName + "` DROP PRIMARY KEY;";
+        } else {
+            return "DROP INDEX `" + keyName + "` ON `" + tableName + "`;";
+        }
     }
 }

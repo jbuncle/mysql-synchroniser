@@ -56,7 +56,7 @@ public class DatabaseDiff {
 
     private List<String> getTableUpdates(final DataSource sourceConnection) throws SQLException {
 
-        final List<String> updates = new LinkedList<String>();
+        final List<String> updates = new LinkedList<>();
         final Map<String, Table> targetTables = this.getTarget().getTables();
         final Map<String, Table> tables = this.getSource().getTables();
 
@@ -82,7 +82,7 @@ public class DatabaseDiff {
 
     private List<String> getViewUpdates() throws SQLException {
 
-        final List<String> updates = new LinkedList<String>();
+        final List<String> updates = new LinkedList<>();
         final Map<String, View> targetViews = this.getTarget().getViews();
         final Map<String, View> sourceViews = this.getSource().getViews();
 
@@ -107,8 +107,7 @@ public class DatabaseDiff {
 
     public List<String> diff(final DataSource sourceConnection) {
         try {
-
-            final List<String> list = new LinkedList<String>();
+            final List<String> list = new LinkedList<>();
             list.addAll(getTableUpdates(sourceConnection));
             list.addAll(getViewUpdates());
             return list;

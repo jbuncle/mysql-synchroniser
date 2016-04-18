@@ -42,7 +42,7 @@ public class ViewDiff {
     }
 
     public List<String> diff() {
-        List<String> updates = new LinkedList<String>();
+        List<String> updates = new LinkedList<>();
         if (!source.equals(target)) {
             updates.add(this.source.getDropStatement());
             updates.add(this.source.getCreateStatement());

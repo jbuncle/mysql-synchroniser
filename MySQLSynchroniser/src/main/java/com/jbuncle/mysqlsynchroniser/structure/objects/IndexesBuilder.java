@@ -21,28 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.jbuncle.mysqlsynchroniser.util;
+package com.jbuncle.mysqlsynchroniser.structure.objects;
 
+import com.jbuncle.mysqlsynchroniser.structure.objects.Index;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
  * @author James Buncle <jbuncle@hotmail.com>
  */
-public class ListUtils {
-    
-    public static <T>  List<T> createListFromItem(T t){
-        List<T> list = new LinkedList<>();
-        list.add(t);
-        return list;
+public class IndexesBuilder {
+
+    private final String tableName;
+    private final Map<String, Index> indexes;
+
+    public IndexesBuilder(final String tableName) {
+        this.indexes = new HashMap<>();
+        this.tableName = tableName;
     }
 
-    public static String implode(final String separator, final Iterable<String> data) {
-        final StringBuilder sb = new StringBuilder();
-        for (String iterable : data) {
-            sb.append(iterable).append(separator);
+    public void addIndex(final String keyName, final boolean nonUnique, final String columnName) {
+        if (this.indexes.containsKey(keyName)) {
+            final List<String> columnNames = this.indexes.get(keyName).getColumnNames();
+            columnNames.add(columnName);
+            this.indexes.put(keyName, new Index(tableName, nonUnique, keyName, columnNames));
+        } else {
+            final List<String> columnNames = new LinkedList<>();
+            columnNames.add(columnName);
+            this.indexes.put(keyName, new Index(tableName, nonUnique, keyName, columnNames));
         }
-        return sb.substring(0, sb.length() - separator.length());
+    }
+
+    public List<Index> getIndexes() {
+        return new LinkedList<>(this.indexes.values());
     }
 }

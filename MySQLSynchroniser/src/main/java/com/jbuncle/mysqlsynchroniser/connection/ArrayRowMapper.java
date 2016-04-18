@@ -21,41 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.jbuncle.mysqlsynchroniser.structure.diff;
+package com.jbuncle.mysqlsynchroniser.connection;
 
-import com.jbuncle.mysqlsynchroniser.structure.objects.Index;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  *
  * @author James Buncle <jbuncle@hotmail.com>
  */
-public class IndexesBuilder {
-
-    private final String tableName;
-    private final Map<String, Index> indexes;
-
-    public IndexesBuilder(final String tableName) {
-        this.indexes = new HashMap<>();
-        this.tableName = tableName;
-    }
-
-    public void addIndex(final String keyName, final boolean nonUnique, final String columnName) {
-        if (this.indexes.containsKey(keyName)) {
-            final List<String> columnNames = this.indexes.get(keyName).getColumnNames();
-            columnNames.add(columnName);
-            this.indexes.put(keyName, new Index(tableName, nonUnique, keyName, columnNames));
-        } else {
-            final List<String> columnNames = new LinkedList<>();
-            columnNames.add(columnName);
-            this.indexes.put(keyName, new Index(tableName, nonUnique, keyName, columnNames));
+public class ArrayRowMapper implements RowMapper<Object[]> {
+    
+    @Override
+    public Object[] rowToObject(ResultSet rs) throws SQLException {
+        final int colCount = rs.getMetaData().getColumnCount();
+        final Object[] arr = new Object[colCount];
+        for (int i = 1; i <= colCount; i++) {
+            arr[i - 1] = rs.getObject(i);
         }
+        return arr;
     }
-
-    public List<Index> getIndexes() {
-        return new LinkedList<>(this.indexes.values());
-    }
+    
 }

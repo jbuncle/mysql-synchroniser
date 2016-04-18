@@ -21,28 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.jbuncle.mysqlsynchroniser.util;
+package com.jbuncle.mysqlsynchroniser.connection;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  *
  * @author James Buncle <jbuncle@hotmail.com>
  */
-public class ListUtils {
-    
-    public static <T>  List<T> createListFromItem(T t){
-        List<T> list = new LinkedList<>();
-        list.add(t);
-        return list;
-    }
+public interface RowMapper<T> {
 
-    public static String implode(final String separator, final Iterable<String> data) {
-        final StringBuilder sb = new StringBuilder();
-        for (String iterable : data) {
-            sb.append(iterable).append(separator);
-        }
-        return sb.substring(0, sb.length() - separator.length());
-    }
+    public T rowToObject(ResultSet rs) throws SQLException;
+    
 }

@@ -21,28 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.jbuncle.mysqlsynchroniser.util;
+package com.jbuncle.mysqlsynchroniser.structure.diff.builder;
 
-import java.util.LinkedList;
 import java.util.List;
 
 /**
  *
  * @author James Buncle <jbuncle@hotmail.com>
+ * @param <T>
  */
-public class ListUtils {
-    
-    public static <T>  List<T> createListFromItem(T t){
-        List<T> list = new LinkedList<>();
-        list.add(t);
-        return list;
-    }
+public interface StatementStrategy<T> {
 
-    public static String implode(final String separator, final Iterable<String> data) {
-        final StringBuilder sb = new StringBuilder();
-        for (String iterable : data) {
-            sb.append(iterable).append(separator);
-        }
-        return sb.substring(0, sb.length() - separator.length());
-    }
+    public List<String> getDeleteStatement(T t);
+
+    public List<String> getUpdateStatement(T from, T to);
+
+    public List<String> getAddStatement(T t);
+
+    public void same(T t);
+    
+    public String getKey(T t);
+    
 }

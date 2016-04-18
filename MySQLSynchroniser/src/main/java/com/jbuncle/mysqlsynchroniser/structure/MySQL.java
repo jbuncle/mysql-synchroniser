@@ -23,13 +23,14 @@
  */
 package com.jbuncle.mysqlsynchroniser.structure;
 
-import com.jbuncle.mysqlsynchroniser.structure.diff.IndexesBuilder;
+import com.jbuncle.mysqlsynchroniser.structure.objects.IndexesBuilder;
 import com.jbuncle.mysqlsynchroniser.structure.objects.View;
 import com.jbuncle.mysqlsynchroniser.structure.objects.Column;
 import com.jbuncle.mysqlsynchroniser.structure.objects.Index;
 import com.jbuncle.mysqlsynchroniser.structure.objects.Table;
 import com.jbuncle.mysqlsynchroniser.structure.objects.Database;
-import com.jbuncle.mysqlsynchroniser.util.ConnectionStrategy;
+import com.jbuncle.mysqlsynchroniser.connection.ConnectionStrategy;
+import com.jbuncle.mysqlsynchroniser.connection.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -69,7 +70,7 @@ public class MySQL {
     }
 
     private List<String> getTables() throws SQLException {
-        return this.connectionStrategy.query("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE';", new ConnectionStrategy.RowMapper<String>() {
+        return this.connectionStrategy.query("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE';", new RowMapper<String>() {
             @Override
             public String rowToObject(ResultSet rs) throws SQLException {
                 return rs.getString(1);
@@ -92,7 +93,7 @@ public class MySQL {
 
     public List<Column> loadFromShowFullColumns(final String tableName) throws SQLException {
 
-        return this.connectionStrategy.query("SHOW FULL COLUMNS IN " + tableName + ";", new ConnectionStrategy.RowMapper<Column>() {
+        return this.connectionStrategy.query("SHOW FULL COLUMNS IN " + tableName + ";", new RowMapper<Column>() {
             @Override
             public Column rowToObject(ResultSet rs) throws SQLException {
                 return loadFromShowFullColumns(rs);
@@ -110,7 +111,7 @@ public class MySQL {
     }
 
     private List<String> getViewNames() throws SQLException {
-        return this.connectionStrategy.query("SHOW FULL TABLES WHERE TABLE_TYPE LIKE 'VIEW';", new ConnectionStrategy.RowMapper<String>() {
+        return this.connectionStrategy.query("SHOW FULL TABLES WHERE TABLE_TYPE LIKE 'VIEW';", new RowMapper<String>() {
             @Override
             public String rowToObject(ResultSet rs) throws SQLException {
                 return rs.getString(1);
@@ -120,7 +121,7 @@ public class MySQL {
 
     private String loadCreateStatement(final String viewName)
             throws SQLException {
-        return this.connectionStrategy.query(viewName, new ConnectionStrategy.RowMapper<String>() {
+        return this.connectionStrategy.query(viewName, new RowMapper<String>() {
             @Override
             public String rowToObject(ResultSet rs) throws SQLException {
                 return rs.getString("Create View");
@@ -133,7 +134,7 @@ public class MySQL {
 
         final IndexesBuilder indexesBuilder = new IndexesBuilder(tableName);
         this.connectionStrategy.query("SHOW INDEXES FROM `" + tableName + "`;",
-                new ConnectionStrategy.RowMapper<String>() {
+                new RowMapper<String>() {
             @Override
             public String rowToObject(ResultSet rs) throws SQLException {
                 final boolean nonUnique = rs.getBoolean("Non_unique");

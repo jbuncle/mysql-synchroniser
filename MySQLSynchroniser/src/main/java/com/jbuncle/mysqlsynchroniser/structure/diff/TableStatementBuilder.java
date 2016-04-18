@@ -24,7 +24,8 @@
 package com.jbuncle.mysqlsynchroniser.structure.diff;
 
 import com.jbuncle.mysqlsynchroniser.structure.objects.Table;
-import com.jbuncle.mysqlsynchroniser.util.ConnectionStrategy;
+import com.jbuncle.mysqlsynchroniser.connection.ConnectionStrategy;
+import com.jbuncle.mysqlsynchroniser.connection.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -55,7 +56,7 @@ class TableStatementBuilder {
     }
 
     private static String getCreateStatement(final DataSource conn, final String table) throws SQLException {
-        final List<String> results = new ConnectionStrategy(conn).query("SHOW CREATE TABLE " + table + ";", new ConnectionStrategy.RowMapper<String>() {
+        final List<String> results = new ConnectionStrategy(conn).query("SHOW CREATE TABLE " + table + ";", new RowMapper<String>() {
             @Override
             public String rowToObject(ResultSet rs) throws SQLException {
                 return rs.getString("Create Table");

@@ -23,10 +23,12 @@
  */
 package com.jbuncle.mysqlsynchroniser.structure.diff;
 
+import com.jbuncle.mysqlsynchroniser.structure.diff.builder.ColumnStatementStrategy;
+import com.jbuncle.mysqlsynchroniser.structure.diff.builder.IndexStatementStrategy;
+import com.jbuncle.mysqlsynchroniser.structure.diff.builder.DiffBuilder;
 import com.jbuncle.mysqlsynchroniser.structure.objects.Table;
 import com.jbuncle.mysqlsynchroniser.structure.objects.Column;
 import com.jbuncle.mysqlsynchroniser.structure.objects.Index;
-import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,92 +39,24 @@ import java.util.List;
 public class TableDiff {
 
     public static List<String> diff(final Table source, final Table target) {
-        try {
-            final List<String> updates = new LinkedList<>();
-            //Get deleted columns
-            updates.addAll(getDeletedColumns(source, target));
-
-            //Get updated columns
-            updates.addAll(getUpdatedColumns(source, target));
-
-            //Get deleted indexes
-            updates.addAll(getDeletedIndexes(source, target));
-
-            //Get updated indexes
-            updates.addAll(getUpdatedIndexes(source, target));
-
-            return updates;
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    private static List<String> getUpdatedColumns(final Table source, final Table target) throws SQLException {
         final List<String> updates = new LinkedList<>();
-        Column lastColumn = null;
-        for (final Column column : source.getColumns()) {
-            ColumnStatementBuilder scriptBuilder = new ColumnStatementBuilder(target.getTableName(), column);
-            final Column targetColumn = target.getColumn(column.getName());
-            if (targetColumn == null) {
-                //Missing column, add it
-                if (lastColumn == null) {
-                    //First column
-                    updates.add(scriptBuilder.getInsertColumnFirstStatement());
-                } else {
-                    //Add after last column
-                    updates.add(scriptBuilder.getInsertColumnAfterStatement(lastColumn));
-                }
-            } else if (!column.equals(targetColumn)) {
-                updates.add(scriptBuilder.getUpdateStatement());
-            }
-            lastColumn = column;
-        }
+        updates.addAll(getColumnDiff(source, target));
+        updates.addAll(getIndexDiff(source, target));
         return updates;
     }
 
-    private static List<String> getUpdatedIndexes(final Table source, final Table target) throws SQLException {
-        final List<String> updates = new LinkedList<>();
-        for (final Index sourceIndex : source.getIndexes()) {
-            final String sourceKeyName = sourceIndex.getKeyName();
-            final Index targetIndex = target.getIndex(sourceKeyName);
-            if (targetIndex == null) {
-                //Get index add
-                updates.add(sourceIndex.getCreateStatement());
-            } else if (!sourceIndex.equals(targetIndex)) {
-                //Different, drop then add
-                updates.add(sourceIndex.getDeleteStatament());
-                updates.add(sourceIndex.getCreateStatement());
-            }
-        }
-        return updates;
+    private static List<String> getColumnDiff(final Table source, final Table target) {
+        final DiffBuilder<Column> diffBuilder = new DiffBuilder<>(new ColumnStatementStrategy(source.getTableName()));
+        diffBuilder.addAllTo(source.getColumns());
+        diffBuilder.addAllFrom(target.getColumns());
+        return diffBuilder.generateStatements();
     }
 
-    private static List<String> getDeletedIndexes(final Table source, final Table target) throws SQLException {
-        final List<String> updates = new LinkedList<>();
-
-        for (final Index index : target.getIndexes()) {
-            final String indexKeyName = index.getKeyName();
-            final Index sourceIndex = source.getIndex(indexKeyName);
-            if (sourceIndex == null) {
-                //Get delete index
-                updates.add(index.getDeleteStatament());
-            }
-        }
-        return updates;
-    }
-
-    private static List<String> getDeletedColumns(final Table source, final Table target) throws SQLException {
-        final List<String> updates = new LinkedList<>();
-        //Work out deletes
-        for (final Column column : target.getColumns()) {
-            final Column thisColumn = source.getColumn(column.getName());
-            final ColumnStatementBuilder scriptBuilder = new ColumnStatementBuilder(target.getTableName(), column);
-            if (thisColumn == null) {
-                //Extra column in target
-                updates.add(scriptBuilder.getDeleteStatement());
-            }
-        }
-        return updates;
+    private static List<String> getIndexDiff(final Table source, final Table target) {
+        final DiffBuilder<Index> builder = new DiffBuilder<>(new IndexStatementStrategy());
+        builder.addAllTo(source.getIndexes());
+        builder.addAllFrom(target.getIndexes());
+        return builder.generateStatements();
     }
 
 }
