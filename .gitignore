@@ -1,2 +1,3 @@
-/MySQLSynchroniser/target/
-/MySQLSynchroniser/nbproject/
+/nbproject/
+/target/
+nb-configuration.xml
