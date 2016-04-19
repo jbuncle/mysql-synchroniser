@@ -1,4 +1,7 @@
 # MySQL Synchroniser
+
+[![Build Status](https://travis-ci.org/jbuncle/mysql-synchroniser.svg?branch=master)](https://travis-ci.org/jbuncle/mysql-synchroniser)
+
 Java library for Synchronising MySQL Schema Structures. 
 
 Provides the ability to re-synchronise MySQL table and database structure. 
