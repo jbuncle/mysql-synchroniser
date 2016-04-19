@@ -22,6 +22,8 @@
 package com.jbuncle.mysqlsynchroniser.structure.objects;
 
 import java.util.Map;
+import java.util.Objects;
+import org.apache.commons.collections.CollectionUtils;
 
 /**
  *
@@ -43,6 +45,33 @@ public class Database {
 
     public Map<String, View> getViews() {
         return views;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Database other = (Database) obj;
+        if (!CollectionUtils.isEqualCollection(this.tables.values(), other.tables.values())) {
+            return false;
+        }
+        if (!CollectionUtils.isEqualCollection(this.views.values(), other.views.values())) {
+            return false;
+        }
+        return true;
     }
 
 }

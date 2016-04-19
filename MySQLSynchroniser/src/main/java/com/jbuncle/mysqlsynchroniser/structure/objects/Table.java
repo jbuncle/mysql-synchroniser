@@ -22,6 +22,8 @@
 package com.jbuncle.mysqlsynchroniser.structure.objects;
 
 import java.util.List;
+import java.util.Objects;
+import org.apache.commons.collections.CollectionUtils;
 
 /**
  *
@@ -41,7 +43,6 @@ public class Table {
         this.columns = columns;
         this.indexes = indexes;
     }
-
 
     public List<Column> getColumns() {
         return this.columns;
@@ -71,6 +72,36 @@ public class Table {
 
     public String getTableName() {
         return tableName;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Table other = (Table) obj;
+        if (!Objects.equals(this.tableName, other.tableName)) {
+            return false;
+        }
+        if (!CollectionUtils.isEqualCollection(this.columns, other.columns)) {
+            return false;
+        }
+        if (!CollectionUtils.isEqualCollection(this.indexes, other.indexes)) {
+            return false;
+        }
+        return true;
     }
 
 }

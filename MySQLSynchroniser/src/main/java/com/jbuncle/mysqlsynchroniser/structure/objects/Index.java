@@ -23,6 +23,7 @@ package com.jbuncle.mysqlsynchroniser.structure.objects;
 
 import com.jbuncle.mysqlsynchroniser.util.ListUtils;
 import java.util.List;
+import org.apache.commons.collections.CollectionUtils;
 
 /**
  *
@@ -91,7 +92,7 @@ public class Index {
             return false;
         } else if (isUniqueKey() ^ target.isUniqueKey()) {
             return false;
-        } else if (!this.columnNames.equals(target.columnNames)) {
+        } else if (!CollectionUtils.isEqualCollection(this.columnNames, target.columnNames)) {
             return false;
         }
         return true;
