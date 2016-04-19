@@ -51,7 +51,6 @@ public class ConnectionStrategy {
         return dataSource.getConnection();
     }
 
-
     public <T> List<T> query(final String query, final RowMapper<T> rowMapper) throws SQLException {
         final List<T> objects = new LinkedList<>();
         try (final Connection conn = getConnection();
@@ -86,7 +85,11 @@ public class ConnectionStrategy {
 
             int index = 0;
             for (final String query : queries) {
-                rowCounts[index] = stmt.executeUpdate(query);
+                try {
+                    rowCounts[index] = stmt.executeUpdate(query);
+                } catch (SQLException ex) {
+                    throw new SQLException("Failed to execute '" + query + "'", ex);
+                }
             }
         }
         return rowCounts;

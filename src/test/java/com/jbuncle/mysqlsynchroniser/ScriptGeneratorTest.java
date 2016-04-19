@@ -26,14 +26,12 @@ package com.jbuncle.mysqlsynchroniser;
 import com.jbuncle.mysqlsynchroniser.connection.ArrayRowMapper;
 import com.jbuncle.mysqlsynchroniser.connection.ConnectionStrategy;
 import com.jbuncle.mysqlsynchroniser.connection.RowMapper;
-import static com.jbuncle.mysqlsynchroniser.util.ListUtils.implode;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import javax.sql.DataSource;
 import junit.framework.TestCase;
 
 /**
@@ -90,26 +88,28 @@ public class ScriptGeneratorTest extends TestCase {
 
     /**
      * Test of compareTable method, of class ScriptGenerator.
+     *
+     * @throws java.lang.Exception
      */
     public void testCompareTable() throws Exception {
         System.out.println("compareTable");
         source.update("CREATE TABLE pet ("
-                + "name VARCHAR(20), "
-                + "owner VARCHAR(20), "
+                + "name VARCHAR(20) NOT NULL COMMENT 'Pet name', "
+                + "owner VARCHAR(20) NULL COMMENT 'The original owner', "
                 + "species VARCHAR(20), "
                 + "sex CHAR(1), "
                 + "birth DATE, "
-                + "death DATE NOT NULL,"
+                + "death DATE NOT NULL COMMENT 'Date of death',"
                 + "CONSTRAINT pk_PersonID PRIMARY KEY (name),"
                 + "UNIQUE KEY `mykey` (`owner`, `species`),"
                 + "UNIQUE KEY `updatedkey` (`owner`, `death`)"
                 + ");");
         target.update("CREATE TABLE pet ("
-                + "name VARCHAR(20), "
-                + "owner VARCHAR(20), "
+                + "name VARCHAR(20) NOT NULL COMMENT 'Pet name', "
+                + "owner VARCHAR(20) COMMENT 'The current owner', "
                 + "species VARCHAR(20) NOT NULL, "
                 + "type VARCHAR(20) NOT NULL, "
-                + "death DATE, "
+                + "death DATE COMMENT 'Date of death', "
                 + "UNIQUE KEY `somekey` (`death`),"
                 + "UNIQUE KEY `updatedkey` (`owner`)"
                 + ");");
@@ -120,6 +120,7 @@ public class ScriptGeneratorTest extends TestCase {
         target.update(result);
 
         compareQueries("DESCRIBE " + table, false);
+        compareQueries("SHOW FULL COLUMNS IN " + table, false);
         compareQueries("SHOW INDEXES FROM " + table, true);
     }
 
@@ -168,8 +169,10 @@ public class ScriptGeneratorTest extends TestCase {
 
     /**
      * Test of compareSchema method, of class ScriptGenerator.
+     *
+     * @throws java.lang.Exception
      */
-    public void testCompareSchema() throws Exception {
+     public void testCompareSchema() throws Exception {
         System.out.println("compareSchema");
 
         source.update("CREATE TABLE table1 (name VARCHAR(20));");

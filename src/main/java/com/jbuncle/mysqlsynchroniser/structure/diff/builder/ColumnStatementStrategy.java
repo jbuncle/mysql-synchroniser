@@ -27,6 +27,7 @@ import com.jbuncle.mysqlsynchroniser.structure.objects.Column;
 import com.jbuncle.mysqlsynchroniser.util.ListUtils;
 import java.util.List;
 import com.jbuncle.mysqlsynchroniser.structure.diff.builder.StatementStrategy;
+import java.util.Objects;
 
 /**
  *
@@ -57,12 +58,12 @@ public class ColumnStatementStrategy implements StatementStrategy<Column> {
         }
     }
 
-    private String getColumnAlterStatement(final Column column, final String action) {
+    private String getColumnAlterStatement(final Column to, final String action) {
         StringBuilder sb = new StringBuilder();
         sb.append("ALTER TABLE `").append(tableName).append("` ").append(action);
-        sb.append(" `").append(column.getColumnName()).append("`");
-        sb.append(" `").append(column.getColumnName()).append("` ");
-        sb.append(getColumnDefinition(column));
+        sb.append(" `").append(to.getColumnName()).append("`");
+        sb.append(" `").append(to.getColumnName()).append("` ");
+        sb.append(getColumnDefinition(to));
         return sb.toString();
     }
 
@@ -88,6 +89,10 @@ public class ColumnStatementStrategy implements StatementStrategy<Column> {
         //Nullable
         sb.append(getNullStatement(column)).append(" ");
         //Default
+        if (column.getDefaultValue() != null) {
+            sb.append("DEFAULT ").append(column.getDefaultValue()).append(" ");
+        }
+        //Extra
         sb.append(column.getExtra()).append(" ");
         //Comment
         sb.append("COMMENT '").append(column.getComment()).append("'");
