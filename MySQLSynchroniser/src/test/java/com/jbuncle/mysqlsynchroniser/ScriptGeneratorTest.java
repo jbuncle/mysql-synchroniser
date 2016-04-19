@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import javax.sql.DataSource;
 import junit.framework.TestCase;
 
 /**
@@ -163,6 +164,26 @@ public class ScriptGeneratorTest extends TestCase {
             }
         }
         return false;
+    }
+
+    /**
+     * Test of compareSchema method, of class ScriptGenerator.
+     */
+    public void testCompareSchema() throws Exception {
+        System.out.println("compareSchema");
+
+        source.update("CREATE TABLE table1 (name VARCHAR(20));");
+        source.update("CREATE TABLE table2 (name VARCHAR(20));");
+        target.update("CREATE TABLE table1 (owner VARCHAR(20));");
+        target.update("CREATE TABLE table3 (owner VARCHAR(20));");
+
+        final List<String> result = ScriptGenerator.compareSchema(source.getDataSource(), target.getDataSource());
+
+        target.update(result);
+
+        compareQueries("DESCRIBE table1;", false);
+        compareQueries("DESCRIBE table2;", false);
+        compareQueries("SHOW FULL TABLES;", false);
     }
 
 }
