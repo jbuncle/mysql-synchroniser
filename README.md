@@ -1,6 +1,7 @@
 # MySQL Synchroniser
 
 [![Build Status](https://travis-ci.org/jbuncle/mysql-synchroniser.svg?branch=master)](https://travis-ci.org/jbuncle/mysql-synchroniser)
+[![Coverage Status](https://coveralls.io/repos/github/jbuncle/mysql-synchroniser/badge.svg?branch=master)](https://coveralls.io/github/jbuncle/mysql-synchroniser?branch=master)
 
 Java library for Synchronising MySQL Schema Structures. 
 
