@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/jbuncle/mysql-synchroniser.svg?branch=master)](https://travis-ci.org/jbuncle/mysql-synchroniser)
 [![codecov.io](https://codecov.io/github/jbuncle/mysql-synchroniser/coverage.svg?branch=master)](https://codecov.io/github/jbuncle/mysql-synchroniser?branch=master)
-[![codacy.com](https://www.codacy.com/public/jbuncle/mysql-synchroniser.git)](https://api.codacy.com/project/badge/15f4db01f834486b82e9a704f3ea2b28)
+[![codacy.com](https://api.codacy.com/project/badge/15f4db01f834486b82e9a704f3ea2b28)](https://www.codacy.com/public/jbuncle/mysql-synchroniser.git)
 
 Java library for Synchronising MySQL Schema Structures. 
 
