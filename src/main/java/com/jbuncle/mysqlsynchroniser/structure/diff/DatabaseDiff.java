@@ -105,14 +105,10 @@ public class DatabaseDiff {
         return updates;
     }
 
-    public List<String> diff(final DataSource sourceConnection) {
-        try {
-            final List<String> list = new LinkedList<>();
-            list.addAll(getTableUpdates(sourceConnection));
-            list.addAll(getViewUpdates());
-            return list;
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        }
+    public List<String> diff(final DataSource sourceConnection) throws SQLException {
+        final List<String> list = new LinkedList<>();
+        list.addAll(getTableUpdates(sourceConnection));
+        list.addAll(getViewUpdates());
+        return list;
     }
 }

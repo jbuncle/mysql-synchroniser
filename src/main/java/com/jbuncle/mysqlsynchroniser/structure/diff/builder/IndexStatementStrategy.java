@@ -54,6 +54,7 @@ public class IndexStatementStrategy implements StatementStrategy<Index> {
 
     @Override
     public void same(Index t) {
+        //Nothing to do for no changes
     }
 
     @Override

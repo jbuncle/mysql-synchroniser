@@ -47,12 +47,8 @@ class TableStatementBuilder {
         return "DROP TABLE " + baseTable.getTableName() + ";";
     }
 
-    public String getCreateStatement(DataSource conn) {
-        try {
-            return getCreateStatement(conn, this.baseTable.getTableName());
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        }
+    public String getCreateStatement(DataSource conn) throws SQLException {
+        return getCreateStatement(conn, this.baseTable.getTableName());
     }
 
     private static String getCreateStatement(final DataSource conn, final String table) throws SQLException {

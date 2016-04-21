@@ -26,8 +26,6 @@ package com.jbuncle.mysqlsynchroniser.structure.diff.builder;
 import com.jbuncle.mysqlsynchroniser.structure.objects.Column;
 import com.jbuncle.mysqlsynchroniser.util.ListUtils;
 import java.util.List;
-import com.jbuncle.mysqlsynchroniser.structure.diff.builder.StatementStrategy;
-import java.util.Objects;
 
 /**
  *

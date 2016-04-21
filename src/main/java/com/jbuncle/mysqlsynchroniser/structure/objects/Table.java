@@ -82,13 +82,7 @@ public class Table {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if (!(obj instanceof Table)) {
             return false;
         }
         final Table other = (Table) obj;
@@ -98,10 +92,7 @@ public class Table {
         if (!CollectionUtils.isEqualCollection(this.columns, other.columns)) {
             return false;
         }
-        if (!CollectionUtils.isEqualCollection(this.indexes, other.indexes)) {
-            return false;
-        }
-        return true;
+        return CollectionUtils.isEqualCollection(this.indexes, other.indexes);
     }
 
 }

@@ -22,6 +22,8 @@
  */
 package com.jbuncle.mysqlsynchroniser.structure.objects;
 
+import java.util.Objects;
+
 /**
  *
  * @author James Buncle
@@ -75,41 +77,35 @@ public class Column {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if (!(obj instanceof Column)) {
             return false;
         }
         final Column other = (Column) obj;
         if (this.nullable != other.nullable) {
             return false;
         }
-        if ((this.columnName == null) ? (other.columnName != null) : !this.columnName.equals(other.columnName)) {
+        if (!Objects.equals(this.columnName, other.columnName)) {
             return false;
         }
-        if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
+
+        if (!Objects.equals(this.type, other.type)) {
             return false;
         }
-        if ((this.key == null) ? (other.key != null) : !this.key.equals(other.key)) {
+
+        if (!Objects.equals(this.key, other.key)) {
             return false;
         }
-        if ((this.defaultValue == null) ? (other.defaultValue != null) : !this.defaultValue.equals(other.defaultValue)) {
+
+        if (!Objects.equals(this.defaultValue, other.defaultValue)) {
             return false;
         }
-        if ((this.extra == null) ? (other.extra != null) : !this.extra.equals(other.extra)) {
+        if (!Objects.equals(this.extra, other.extra)) {
             return false;
         }
-        if ((this.collation == null) ? (other.collation != null) : !this.collation.equals(other.collation)) {
+        if (!Objects.equals(this.collation, other.collation)) {
             return false;
         }
-        if ((this.comment == null) ? (other.comment != null) : !this.comment.equals(other.comment)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.comment, other.comment);
     }
 
     public String getColumnName() {
