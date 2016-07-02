@@ -23,6 +23,7 @@ package com.jbuncle.mysqlsynchroniser.structure.objects;
 
 import com.jbuncle.mysqlsynchroniser.util.ListUtils;
 import java.util.List;
+import java.util.Objects;
 import org.apache.commons.collections.CollectionUtils;
 
 /**
@@ -118,4 +119,44 @@ public class Index {
             return "DROP INDEX `" + keyName + "` ON `" + tableName + "`;";
         }
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 97 * hash + Objects.hashCode(this.tableName);
+        hash = 97 * hash + (this.nonUnique ? 1 : 0);
+        hash = 97 * hash + Objects.hashCode(this.keyName);
+        hash = 97 * hash + Objects.hashCode(this.columnNames);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Index other = (Index) obj;
+        if (this.nonUnique != other.nonUnique) {
+            return false;
+        }
+        if (!Objects.equals(this.tableName, other.tableName)) {
+            return false;
+        }
+        if (!Objects.equals(this.keyName, other.keyName)) {
+            return false;
+        }
+        return Objects.equals(this.columnNames, other.columnNames);
+    }
+
+    @Override
+    public String toString() {
+        return "Index{" + "tableName=" + tableName + ", nonUnique=" + nonUnique + ", keyName=" + keyName + ", columnNames=" + columnNames + '}';
+    }
+
 }
