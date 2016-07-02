@@ -88,13 +88,30 @@ public class ColumnStatementStrategy implements StatementStrategy<Column> {
         sb.append(getNullStatement(column)).append(" ");
         //Default
         if (column.getDefaultValue() != null) {
-            sb.append("DEFAULT ").append(column.getDefaultValue()).append(" ");
+            sb.append("DEFAULT ").append(getDefaultValue(column)).append(" ");
         }
         //Extra
         sb.append(column.getExtra()).append(" ");
         //Comment
         sb.append("COMMENT '").append(column.getComment()).append("'");
         return sb;
+    }
+
+    private static String getDefaultValue(Column column) {
+        String rawDefaultValue = column.getDefaultValue();
+        if (isBoolean(rawDefaultValue) || isNumeric(rawDefaultValue)) {
+            return rawDefaultValue;
+        } else {
+            return "'" + rawDefaultValue + "'";
+        }
+    }
+
+    private static boolean isBoolean(String str) {
+        return str.equals("true") || str.equals("true");
+    }
+
+    private static boolean isNumeric(String str) {
+        return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
     }
 
     public String getTableName() {

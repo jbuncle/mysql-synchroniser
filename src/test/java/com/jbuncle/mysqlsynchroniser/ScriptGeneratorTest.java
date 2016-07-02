@@ -95,7 +95,8 @@ public class ScriptGeneratorTest extends TestCase {
         System.out.println("compareTable");
         source.update("CREATE TABLE pet ("
                 + "name VARCHAR(20) NOT NULL COMMENT 'Pet name', "
-                + "owner VARCHAR(20) NULL COMMENT 'The original owner', "
+                + "owner VARCHAR(20) NULL COMMENT 'The original owner' DEFAULT 'Unknown', "
+                + "legs INT DEFAULT 4, "
                 + "species VARCHAR(20), "
                 + "sex CHAR(1), "
                 + "birth DATE, "
@@ -105,8 +106,9 @@ public class ScriptGeneratorTest extends TestCase {
                 + "UNIQUE KEY `updatedkey` (`owner`, `death`)"
                 + ");");
         target.update("CREATE TABLE pet ("
-                + "name VARCHAR(20) NOT NULL COMMENT 'Pet name', "
-                + "owner VARCHAR(20) COMMENT 'The current owner', "
+                + "name VARCHAR(20) NOT NULL COMMENT 'Pet name' DEFAULT '', "
+                + "owner VARCHAR(20) COMMENT 'The current owner' DEFAULT 'Unknown', "
+                + "legs INT, "
                 + "species VARCHAR(20) NOT NULL, "
                 + "type VARCHAR(20) NOT NULL, "
                 + "death DATE COMMENT 'Date of death', "
